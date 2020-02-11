@@ -1,19 +1,12 @@
 #комментарии в оба файла, укоротить код, тесты и отлов ошибок. Сообщение о успешной архивации
-#посмотреть про доступные методы архивирование, сделать выбор метода
-#изучить os что бы внешние каталоги не архивировались 
-#
+#посмотреть про доступные методы архивирование, сделать выбор метода - не поддерживаются!
+#изучить os что бы внешние каталоги не архивировались (os.walk(s), os.chdir(s), print(os.getcwd()) - улучшение на будущее
+#файлы не архивируются, для архивации файлов, убедиться, что это файл (у него будет .расширение) и записать отдельно
 
 import os, time, zipfile, path
 
-# 1. Файлы и каталоги, которые необходимо скопировать, собираются в список.
-# source = ['E:\\Code Dev\\py\\Backupper', 'E:\\Code Dev\\py\\Project Euler']
-# Заметьте, что для имён, содержащих пробелы, необходимо использовать
-# двойные кавычки внутри строки.
-#source = path.source[:]
-
-# 2. Резервные копии должны храниться в основном каталоге резерва.
-#target_dir = 'E:\\Code Dev\\py' # Подставьте тот путь, который вы будете использовать.
 def Conversion_path(str):
+    '''Преобразование путей в поддерживаемые .py'''
     start = 0
     end = 0
     STR = ""
@@ -26,21 +19,26 @@ def Conversion_path(str):
         start = end + 1
     return STR
 
+#получение путей
 source = []
 for s in path.source:
     source.append(Conversion_path(s))
-#print (source)
 target_dir = Conversion_path(path.target_dir)
 
-# 3. Файлы помещаются в zip-архив.
-# 4. Текущая дата служит именем подкаталога в основном каталоге
-today = target_dir + os.sep + time.strftime('%d-%m-%Y')
-# Текущее время служит именем zip-архива
-now = time.strftime('%H.%M.%S')
+#интерфейс
+Start = input ("Для создания резервных копий каталогов в {} введите 1: ".format(target_dir))
+if Start != "1": exit(0)
+print("Выбранные вами каталоги:")
+for s in source:
+    print(s)
+print()
 
-# Запрашиваем комментарий пользователя для имени файла
-comment = input('Введите комментарий --> ')
-if len(comment) == 0: # проверяем, введён ли комментарий
+today = target_dir + os.sep + "BackUp(" + time.strftime('%d-%m-%Y') + ")" #имя каталога
+now = time.strftime('%H.%M.%S') #имя архива без комментария
+
+#Комментарий 
+comment = input('Введите комментарий или ничего: ')
+if len(comment) == 0: #если нет комментария
     target = today + os.sep + now + '.zip'
 else:
     target = today + os.sep + now + '(' + \
@@ -51,16 +49,20 @@ if not os.path.exists(today):
     os.mkdir(today) # создание каталога
 print('Каталог успешно создан', today)
 
-# 5. Создание архива
-zip = zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) 
-#Архивирование всех файлов каталога
-for s in source:
-    for root, dirs, files in os.walk(s): # Список всех файлов и папок в директории folder
-        for file in files:
-            zip.write(os.path.join(root,file))
-            print(os.path.join(root,file)) 
-            
-zip.close()
+try:
+    #Создание архива
+    zip = zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) 
+    #Архивирование всех файлов выбранных каталогов
+    for s in source:
+        for root, dirs, files in os.walk(s): # Список всех файлов и папок в директории
+            for file in files:
+                zip.write(os.path.join(root,file))  
+    zip.close()
+except: print('Создание резервной копии НЕ УДАЛОСЬ')
+else: 
+    print('Резервная копия успешно создана в', target) 
+
+
 
 '''
 # Запускаем создание резервной копии
